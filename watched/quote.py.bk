@@ -1,0 +1,53 @@
+import messagehandler
+import random
+import re
+import fileao
+import json
+
+
+# TODO Fix
+quotes_ao = fileao.FileAO('quotes.json')
+quotes = quotes_ao.get_file_content()
+if not quotes:
+    quotes = {}
+
+
+@messagehandler.register("twitch", "!randomquote")
+def random_quote(bot, sent_by, message):
+    if len(quotes[bot.get_channel()]) > 0:
+        bot.write_to_chat(get_quote(random.randint(1, len(quotes[bot.get_channel()]))))
+
+
+@messagehandler.register("twitch", "!quote")
+def quote(bot, sent_by, message):
+    try:
+        no_quote = message.split(' ', 1)[1]
+        quote_cmd = no_quote.split(' ', 1)[0]
+        if re.match("\d+", quote_cmd):
+            quote_return = get_quote(max(0, int(quote_cmd) - 1))
+            if quote_return:
+                bot.write_to_chat(quote_return)
+        elif re.match("add", quote_cmd):
+            if messagehandler.is_user_elevated(sent_by):
+                add(no_quote.split(' ', 1)[1])
+        else:
+            bot.write_to_chat("{}, you wrote the command wrong :)".format(sent_by))
+    except:
+        pass
+
+
+def add(bot, message):
+    if bot.get_channel() not in quotes:
+        quotes[bot.get_channel()] = []
+    quotes[bot.get_channel()].append(message)
+    bot.write_to_chat("Added quote #{}".format(len(quotes[bot.get_channel()])))
+    quotes_ao.write(json.dumps(quotes, sort_keys=True, indent=4))
+
+
+def get_quote(bot, number):
+    ret_val = None
+    try:
+        ret_val = quotes[bot.get_channel()][number]
+    except IndexError:
+        print("IndexError while getting quote")
+    return ret_val

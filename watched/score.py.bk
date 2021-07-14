@@ -1,0 +1,81 @@
+import messagehandler
+
+
+# TODO Fix
+
+
+@messagehandler.register("twitch", "!heal")
+def heal(bot, sent_by, msg_text):
+    if messagehandler.is_user_elevated(sent_by):
+        messagehandler.counters['healCounter'] = messagehandler.counters.get('healCounter', 0) + 1
+
+
+@messagehandler.register("twitch", "!heals")
+def heals(bot, sent_by, msg_text):
+    bot.write_to_chat("{} has healed {} times already...".format(messagehandler.streamer,
+                                                                           messagehandler.counters.get('healCounter', 0)))
+
+
+@messagehandler.register("twitch", "!death")
+def death(bot, sent_by, msg_text):
+    if messagehandler.is_user_elevated(sent_by):
+        messagehandler.counters['deathCounter'] = messagehandler.counters.get('deathCounter', 0) + 1
+
+
+@messagehandler.register("twitch", "!deaths")
+def deaths(bot, sent_by, msg_text):
+    bot.write_to_chat("{} has died {} times...".format(messagehandler.streamer,
+                                                                 messagehandler.counters.get('deathCounter', 0)))
+
+
+@messagehandler.register("twitch", "!save")
+def save(bot, sent_by, msg_text):
+    if messagehandler.is_user_elevated(sent_by):
+        messagehandler.counters['saveCounter'] = messagehandler.counters.get('saveCounter', 0) + 1
+
+
+@messagehandler.register("twitch", "!saves")
+def saves(bot, sent_by, msg_text):
+    bot.write_to_chat("{} has saved {} times...".format(messagehandler.streamer,
+                                                                  messagehandler.counters.get('saveCounter', 0)))
+
+
+@messagehandler.register("twitch", "!win")
+def win(bot, sent_by, msg_text):
+    if messagehandler.is_user_elevated(sent_by):
+        bot.write_to_chat('{} has died {} times...'.format(messagehandler.streamer,
+                                                                     messagehandler.counters['deathCounter']))
+        messagehandler.counters['deathCounter'] = 0
+
+
+@messagehandler.register("twitch", '!reset')
+def reset(bot, sent_by, msg_text):
+    if messagehandler.is_user_elevated(sent_by):
+        try:
+            extra_command = str(msg_text.split(' ', 1)[1])
+        except IndexError:
+            extra_command = ''
+            bot.write_to_chat('Reset what!!!!')
+        except TypeError:
+            print('TypeERR')
+        if 'heal' in extra_command:
+            messagehandler.counters['healCounter'] = 0
+            bot.write_to_chat('Done')
+        elif 'save' in extra_command:
+            messagehandler.counters['saveCounter'] = 0
+            bot.write_to_chat('Done')
+        elif 'death' in extra_command:
+            messagehandler.counters['deathCounter'] = 0
+            bot.write_to_chat('Done')
+        elif 'all' in extra_command or 'everything' in extra_command:
+            messagehandler.counters['healCounter'] = 0
+            messagehandler.counters['saveCounter'] = 0
+            messagehandler.counters['deathCounter'] = 0
+            bot.write_to_chat('Done')
+
+
+@messagehandler.register("twitch", '!help')
+def cmd_help(bot, sent_by, msg_text):
+    if messagehandler.is_user_elevated(sent_by):
+        help_output = ', '.join(bot.get_commands())
+        bot.write_to_chat('Commands: {}'.format(help_output))

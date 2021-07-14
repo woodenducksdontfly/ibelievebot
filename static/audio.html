@@ -1,0 +1,41 @@
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+var audio_to_play = [];
+var aud;
+
+function startWebsocket(){
+	var socket = new WebSocket('ws://localhost:8085');
+
+	socket.onopen = function(event) {
+		console.log("open");
+		return false;
+	}
+
+	socket.onclose = function(event) {
+		console.log("close");
+		socket = null
+		setTimeout(startWebsocket, 2000);
+		return false;
+	}
+
+	socket.onmessage = function(event) {
+		console.log('Message from server ', event.data);
+		audio_to_play.push(event.data);
+		return false;
+	}
+};
+
+$(document).ready(startWebsocket);
+
+function pollAudio() {
+	if (audio_to_play.length > 0) {
+		if (aud == undefined || (aud.paused || aud.ended)) {
+			aud = new Audio('get_audio/' + audio_to_play.shift());
+			//aud = new Audio('StreamSounds/' + audio_to_play.shift());
+			aud.play();
+		}
+	}
+}
+
+setInterval(pollAudio, 1000);
+</script>
