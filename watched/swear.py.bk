@@ -1,0 +1,23 @@
+import messagehandler
+import json
+
+# TODO Fix
+
+
+def _init_player(user):
+    messagehandler.init_player(user)
+    if not messagehandler.user_data[user].get("swears", None):
+        messagehandler.user_data[user]["swears"] = 0
+
+
+@messagehandler.register("twitch", '!swear')
+def swear(bot, sent_by, msg_text):
+    try:
+        user = msg_text.split(' ')[1]
+    except:
+        user = messagehandler.streamer
+    _init_player(user)
+    messagehandler.user_data[user]["swears"] += 1
+    messagehandler.user_data_file_ao.write(json.dumps(messagehandler.user_data, sort_keys=True, indent=4))
+    bot.write_to_chat("{} has sworn {} times!".format(user, messagehandler.user_data[user]["swears"]))
+
