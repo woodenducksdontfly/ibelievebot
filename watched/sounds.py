@@ -101,7 +101,7 @@ def skeletons(bot, sent_by, msg_text, channel=None):
 
 
 @messagehandler.register("twitch", "!quack")
-def skeletons(bot, sent_by, msg_text, channel=None):
+def quack(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
         bot.message_mailbox.put(("audio", sent_by, 'Quack.wav', channel))
 
