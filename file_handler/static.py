@@ -8,6 +8,10 @@ class StaticFileHandler:
     def __init__(self):
         global file_handler
         self.file_data = {}
+        try:
+            os.mkdir("data/read_only")
+        except FileExistsError as e:
+            pass
         for file in os.listdir("data/read_only"):
             self.load_data_file(file)
         file_handler = self

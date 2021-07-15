@@ -66,9 +66,13 @@ class MessageHandler(Thread):
         mod_date = os.stat(file_path)[8]
         if mod_date > self._files_last_read_time.get(file_path, 0):
             print("Loading {}".format(file_path))
-            with open(file_path) as file:
-                global _elevated_users
-                _elevated_users = json.load(file)
+            global _elevated_users
+            try:
+                with open(file_path) as file:
+                    _elevated_users = json.load(file)
+                    self._files_last_read_time[file_path] = mod_date
+            except:
+                _elevated_users = {}
                 self._files_last_read_time[file_path] = mod_date
 
     def _load_python_module(self, file_path):
