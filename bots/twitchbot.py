@@ -33,8 +33,14 @@ class TwitchBot(Thread, Bot):
         self.streamer = streamer
         self.channels = []
         self.go_live_notification = go_live_notification
-        with open("data/join_channels.json", 'r') as f:
-            self.channels = json.load(f) # ["#{}".format(channel_name) for channel_name in json.load(f)]
+        try:
+            with open("data/join_channels.json", 'r') as f:
+                self.channels = json.load(f) # ["#{}".format(channel_name) for channel_name in json.load(f)]
+        except:
+            with open("data/join_channels.json", 'w') as f:
+                print("You should update data/join_channels.json")
+                f.write('["woodenducksdontfly"]\n')
+                self.channels = "woodenducksdontfly"
         self.message_mailbox = message_mailbox
         self.irc_channel = irc.IrcChannel("irc.chat.twitch.tv", 6667)
         # Message format from twitch irc
@@ -47,8 +53,14 @@ class TwitchBot(Thread, Bot):
         for channel in self.channels:
             self.long_live_live[channel] = False
         self.streamer_api_tokens = {}
-        with open('data/streamer_api_tokens.json', 'r') as f:
-            self.streamer_api_tokens = json.load(f)
+        try:
+            with open('data/streamer_api_tokens.json', 'r') as f:
+                self.streamer_api_tokens = json.load(f)
+        except:
+            api_tokens = {"woodenducksdontfly": ""}
+            with open('data/streamer_api_tokens.json', 'w') as f:
+                f.write(json.dumps(api_tokens, sort_keys=True, indent=4))
+            self.streamer_api_tokens = api_tokens
         print("New BOT")
 
     def write_to_system(self, message):

@@ -7,6 +7,7 @@ from flask import Flask, make_response, send_file, send_from_directory
 from file_handler import static, user_data, stream
 import messagehandler
 import logging
+import os
 
 app = Flask(__name__)
 twitch_bot = None
@@ -60,8 +61,25 @@ if __name__ == "__main__":
     slack_token = None  # Secret
     youtube_token = None  # Secret
     # Read in secrets
-    with open("data/secrets.py") as f:
-        exec(f.read())
+    try:
+        with open("data/secrets.py") as f:
+            exec(f.read())
+    except:
+        try:
+            os.mkdir("data")
+        except FileExistsError as e:
+            pass
+        with open("data/secrets.py", 'w') as f:
+            f.write('streamer = "woodenducksdontfly"\n')
+            f.write('channel = streamer\n')
+            f.write('twitch_client_id = ""\n')
+            f.write('twitch_oauth = "oauth:"\n')
+            f.write('twitch_api_oauth = ""\n')
+            f.write('discord_token = ""\n')
+            f.write('slack_token = ""\n')
+            f.write('youtube_token = ""\n')
+        print("Update data/secrets.py")
+        exit()
 
     user_data.UserDataHandler()
     static.StaticFileHandler()
