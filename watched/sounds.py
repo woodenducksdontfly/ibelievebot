@@ -99,3 +99,8 @@ def skeletons(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
         bot.message_mailbox.put(("audio", sent_by, 'spooky-scary-skeleton_WnTSX24(1).mp3', channel))
 
+
+@messagehandler.register("twitch", "!quack")
+def skeletons(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'Quack.wav', channel))
