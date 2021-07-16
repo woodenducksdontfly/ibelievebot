@@ -1,4 +1,5 @@
 import asyncio
+import os
 import websockets
 from bots.bot import Bot
 from threading import Thread
@@ -14,7 +15,10 @@ class SoundAlertServer(Thread, Bot):
         global sound_alert_server_instance
         self.message_mailbox = message_mailbox
         self.websocket = None
-
+        try:
+            os.mkdir("static/StreamSounds")
+        except FileExistsError as e:
+            pass
         sound_alert_server_instance = self
 
     async def hello(self, websocket, path):
