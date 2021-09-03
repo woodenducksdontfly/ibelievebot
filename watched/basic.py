@@ -1,5 +1,6 @@
 import messagehandler
 import random
+import re
 from datetime import datetime
 
 
@@ -90,13 +91,20 @@ def blame(bot, sent_by, msg_text, channel=None):
 def hammer(bot, sent_by, msg_text, channel=None):
     if not messagehandler.is_user_elevated(bot, channel, sent_by):
         return
-    print("======================== Hammer Mode ========================")
     bot.penalty_mode = 'ban'
+    print("======================== Hammer Mode {} ========================".format(bot.penalty_mode))
 
 @messagehandler.register("twitch", '!stick')
 def stick(bot, sent_by, msg_text, channel=None):
     if not messagehandler.is_user_elevated(bot, channel, sent_by):
         return
-    print("======================== Stick Mode ========================")
+    timeout_in_seconds = 5
+    try:
+        msg_text = re.sub("\s+", " ", msg_text)
+        timeout_in_seconds = max(int(msg_text.split(' ')[1]), 5)
+    except Exception as ea:
+        pass
     bot.penalty_mode = 'timeout'
-
+    bot.penalty_timeout = timeout_in_seconds
+    print("======================== Stick Mode {} - {} ========================".format(bot.penalty_mode,
+                                                                                        bot.penalty_timeout))

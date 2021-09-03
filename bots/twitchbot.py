@@ -33,6 +33,7 @@ class TwitchBot(Thread, Bot):
         self.streamer = streamer
         self.channels = []
         self.penalty_mode = 'timeout'
+        self.penalty_timeout = 5
         self.go_live_notification = go_live_notification
         try:
             with open("data/join_channels.json", 'r') as f:
@@ -127,16 +128,14 @@ class TwitchBot(Thread, Bot):
                 #moderators.append(user['user_name'])
                 moderators.append(user['user_login'])
         except Exception as e:
-            print(e)
+            print("Get moderators error {}".format(e))
         print("Twitch Moderators {}".format(str(moderators)))
         return moderators
 
-    def set_penalty_mode(self, mode):
-        self.penalty_mode = mode
-
-    def anti_bot_check_pass(self, from_user, message):
+    @staticmethod
+    def anti_bot_check_pass(from_user, message):
         ret_val = False
-        if "wooden" in message or "ducky" in message or "..." in message:
+        if re.match("wooden|ducky|...", message):
             anti.anti_data_handler.register(from_user)
         if anti.anti_data_handler.is_registered(from_user):
             ret_val = True
@@ -171,8 +170,12 @@ class TwitchBot(Thread, Bot):
                         message = textutil.sanitize_text(msg_text)
                         if self.anti_bot_check_pass(from_user, message.lower()):
                             self.message_mailbox.put(("twitch", from_user, message, from_channel))
-                        else:
-                            self.write_to_chat("/{} {} 5".format(self.penalty_mode, from_user), from_channel)
+                        elif self.penalty_mode == 'timeout':
+                            self.write_to_chat("/{} {} {}".format(self.penalty_mode,
+                                                                  from_user,
+                                                                  self.penalty_timeout), from_channel)
+                        elif self.penalty_mode == 'ban':
+                            self.write_to_chat("/{} {}".format(self.penalty_mode, from_user), from_channel)
                 except Exception as err:
                     print("Can't read this {}".format(received_text))
                     print("{}".format(err))
