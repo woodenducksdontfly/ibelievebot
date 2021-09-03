@@ -10,7 +10,7 @@ import json
 from bots.bot import Bot
 import importlib
 import copy
-
+from file_handler import anti
 
 class TwitchBot(Thread, Bot):
 
@@ -32,6 +32,7 @@ class TwitchBot(Thread, Bot):
         self.timers = {}
         self.streamer = streamer
         self.channels = []
+        self.penalty_mode = 'timeout'
         self.go_live_notification = go_live_notification
         try:
             with open("data/join_channels.json", 'r') as f:
@@ -111,6 +112,7 @@ class TwitchBot(Thread, Bot):
                 print("No result {}".format(e))
 
     def is_stream_live(self, channel):
+        # return True
         return self.long_live_live[channel]
 
     def get_moderators(self, channel):
@@ -128,6 +130,17 @@ class TwitchBot(Thread, Bot):
             print(e)
         print("Twitch Moderators {}".format(str(moderators)))
         return moderators
+
+    def set_penalty_mode(self, mode):
+        self.penalty_mode = mode
+
+    def anti_bot_check_pass(self, from_user, message):
+        ret_val = False
+        if "wooden" in message or "ducky" in message or "..." in message:
+            anti.anti_data_handler.register(from_user)
+        if anti.anti_data_handler.is_registered(from_user):
+            ret_val = True
+        return ret_val
 
     def run(self):
         self.write_to_system("PASS {}\r\n".format(self.password))
@@ -156,8 +169,12 @@ class TwitchBot(Thread, Bot):
                         from_channel = result.group(6).strip().lower()
                         msg_text = result.group(8).strip()
                         message = textutil.sanitize_text(msg_text)
-                        self.message_mailbox.put(("twitch", from_user, message, from_channel))
-                except:
+                        if self.anti_bot_check_pass(from_user, message.lower()):
+                            self.message_mailbox.put(("twitch", from_user, message, from_channel))
+                        else:
+                            self.write_to_chat("/{} {} 5".format(self.penalty_mode, from_user), from_channel)
+                except Exception as err:
                     print("Can't read this {}".format(received_text))
+                    print("{}".format(err))
             elif re.match("^PING :(.*)$", received_text):
                 self.write_to_system("PONG tmi.twitch.tv\r\n")

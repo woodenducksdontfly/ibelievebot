@@ -24,6 +24,9 @@ invalid_users = ["local.mockuser",
                  "discord_for_streamers",
                  "mslenity",
                  "d1sc0rdforsmallstreamers",
+                 "bingcortana",
+                 "SoundAlerts",
+                 "sad_grl",
                  "woodenducksdontfly"]
 
 global appeal_for_syrup
@@ -144,7 +147,7 @@ def gamble(bot, sent_by, msg_text, channel=None):
     #         cooldown.set_cooldown_message_sent(function_name)
     #     return
     if not bot.is_stream_live(channel):
-        return
+       return
     try:
         club_status = user_data.user_data_handler.get_club_status(sent_by)
         if club_status:
@@ -237,8 +240,9 @@ def balance(bot, sent_by, msg_text, channel=None):
 
 @messagehandler.register("twitch", "!give")
 def give(bot, sent_by, msg_text, channel=None):
-    # if sent_by != messagehandler.streamer and sent_by != "local.MockUser":
-    #     return
+    #if sent_by != messagehandler.streamer and sent_by != "local.MockUser":
+    if sent_by != "woodenducksdontfly" and sent_by != "local.MockUser":
+         return
     try:
         who_to_give = msg_text.split(' ')[1].lower()
     except Exception as e:
@@ -251,6 +255,9 @@ def give(bot, sent_by, msg_text, channel=None):
         return
     user_data.user_data_handler.add_balance(who_to_give, amount_to_give)
     bot.write_to_chat('Gave {} {} {}'.format(who_to_give, amount_to_give, currency), channel)
+    # TODO let users give waffles to each other
+    # return
+    #user_balance = user_data.user_data_handler.get_balance(sent_by)
 
 
 @messagehandler.register("twitch", "!top5")

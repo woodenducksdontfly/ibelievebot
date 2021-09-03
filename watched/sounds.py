@@ -105,3 +105,15 @@ def quack(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
         bot.message_mailbox.put(("audio", sent_by, 'Quack.wav', channel))
 
+
+@messagehandler.register("twitch", "!wowu")
+def quack(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'wowu.wav', channel))
+
+
+@messagehandler.register("twitch", "!box")
+def quack(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'IAmABox.mp3', channel))
+

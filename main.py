@@ -4,7 +4,7 @@ import bots.discordbot
 import bots.soundalertserver
 from queue import Queue
 from flask import Flask, make_response, send_file, send_from_directory
-from file_handler import static, user_data, stream
+from file_handler import anti, static, user_data, stream
 import messagehandler
 import logging
 import os
@@ -81,6 +81,7 @@ if __name__ == "__main__":
         print("Update data/secrets.py")
         exit()
 
+    anti.AntiDataHandler()
     user_data.UserDataHandler()
     static.StaticFileHandler()
     stream.StreamDataHandler()

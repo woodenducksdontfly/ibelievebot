@@ -20,7 +20,7 @@ def hullo(bot, sent_by, msg_text, channel=None):
 
 @messagehandler.register("twitch", "!discord")
 def discord(bot, sent_by, msg_text, channel=None):
-    bot.write_to_chat("https://discord.gg/s5Wqajf", channel)
+    bot.write_to_chat("https://discord.gg/Xmf2YaK", channel)
 
 
 @messagehandler.register("twitch", "!socials")
@@ -81,4 +81,22 @@ def blame(bot, sent_by, msg_text, channel=None):
 @messagehandler.register("twitch", '!chess')
 def blame(bot, sent_by, msg_text, channel=None):
     bot.write_to_chat("https://www.chess.com/member/woodenduck", channel)
+
+@messagehandler.register("twitch", '!src')
+def blame(bot, sent_by, msg_text, channel=None):
+    bot.write_to_chat("https://github.com/woodenducksdontfly/ibelievebot", channel)
+
+@messagehandler.register("twitch", '!hammer')
+def hammer(bot, sent_by, msg_text, channel=None):
+    if not messagehandler.is_user_elevated(bot, channel, sent_by):
+        return
+    print("======================== Hammer Mode ========================")
+    bot.penalty_mode = 'ban'
+
+@messagehandler.register("twitch", '!stick')
+def stick(bot, sent_by, msg_text, channel=None):
+    if not messagehandler.is_user_elevated(bot, channel, sent_by):
+        return
+    print("======================== Stick Mode ========================")
+    bot.penalty_mode = 'timeout'
 
