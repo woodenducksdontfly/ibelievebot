@@ -1,10 +1,10 @@
 import messagehandler
-from file_handler import user_data
+from data_handlers import user_data
 
 
 def _use_points(user):
-    if user_data.user_data_handler.get_syrup_balance(user) >= 10:
-        user_data.user_data_handler.subtract_syrup_balance(user, 10)
+    if user_data.user_data_handler.get_syrup_balance(user) >= 100:
+        user_data.user_data_handler.subtract_syrup_balance(user, 100)
         return True
     else:
         return False
@@ -107,13 +107,19 @@ def quack(bot, sent_by, msg_text, channel=None):
 
 
 @messagehandler.register("twitch", "!wowu")
-def quack(bot, sent_by, msg_text, channel=None):
+def wowu(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
-        bot.message_mailbox.put(("audio", sent_by, 'wowu.wav', channel))
+        bot.message_mailbox.put(("audio", sent_by, 'wowu.mp3', channel))
 
 
 @messagehandler.register("twitch", "!box")
-def quack(bot, sent_by, msg_text, channel=None):
+def box(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
         bot.message_mailbox.put(("audio", sent_by, 'IAmABox.mp3', channel))
+
+
+@messagehandler.register("twitch", "!nixon")
+def box(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'nixon.mp3', channel))
 

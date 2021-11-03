@@ -108,3 +108,22 @@ def stick(bot, sent_by, msg_text, channel=None):
     bot.penalty_timeout = timeout_in_seconds
     print("======================== Stick Mode {} - {} ========================".format(bot.penalty_mode,
                                                                                         bot.penalty_timeout))
+
+
+@messagehandler.register("twitch", '!rollwithus')
+def blame(bot, sent_by, msg_text, channel=None):
+    bot.write_to_chat("!play", channel)
+
+
+# TODO this needs work
+@messagehandler.register("twitch", '!welcome')
+def blame(bot, sent_by, msg_text, channel=None):
+    if not messagehandler.is_user_elevated(bot, channel, sent_by):
+        return
+    username = "everyone"
+    try:
+        username = re.sub("\s+", " ", msg_text).split(' ')[1]
+    except Exception as ea:
+        # previous user should be added to user_registry
+        pass
+    bot.write_to_chat(f"Welcome {username} you can chat now :)!", channel)

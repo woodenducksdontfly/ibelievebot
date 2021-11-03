@@ -10,7 +10,7 @@ import json
 from bots.bot import Bot
 import importlib
 import copy
-from file_handler import anti
+from data_handlers import anti, gamble_data, lurk_data
 
 class TwitchBot(Thread, Bot):
 
@@ -75,18 +75,18 @@ class TwitchBot(Thread, Bot):
         if channel:
             if self.timers.get(name):
                 self.timers[name].cancel()
-            self.timers[name] = Timer(timeout, function, [self, channel])
+            self.timers[name] = Timer(timeout, function, [self, channel, channel, channel])
             self.timers[name].daemon = True
             self.timers[name].start()
         else:
             for my_channel in self.channels:
                 if self.timers.get("{}_{}".format(name, my_channel)):
                     self.timers["{}_{}".format(name, my_channel)].cancel()
-                self.timers["{}_{}".format(name, my_channel)] = Timer(timeout, function, [self, my_channel])
+                self.timers["{}_{}".format(name, my_channel)] = Timer(timeout, function, [self, my_channel, my_channel, my_channel])
                 self.timers["{}_{}".format(name, my_channel)].daemon = True
                 self.timers["{}_{}".format(name, my_channel)].start()
 
-    def go_live(self, thread, channel):
+    def go_live(self, thread, sent_by, msg_txt, channel):
         self.register_timer('check_for_live_{}'.format(channel), self.go_live, channel, 600.0)
         # self.register_timer('check_for_live', self.go_live, 120.0)
         resp = requests.get(url="https://api.twitch.tv/helix/search/channels?query={}".format(channel),
@@ -113,8 +113,8 @@ class TwitchBot(Thread, Bot):
                 print("No result {}".format(e))
 
     def is_stream_live(self, channel):
-        # return True
-        return self.long_live_live[channel]
+        return True
+        # return self.long_live_live[channel]
 
     def get_moderators(self, channel):
         moderators = []
@@ -135,13 +135,88 @@ class TwitchBot(Thread, Bot):
     @staticmethod
     def anti_bot_check_pass(from_user, message):
         ret_val = False
-        if re.match("wooden|ducky|...", message):
+        if re.match("^.*(wooden|ducky)+.*", message):
             anti.anti_data_handler.register(from_user)
         if anti.anti_data_handler.is_registered(from_user):
             ret_val = True
         return ret_val
 
+    def subscribe_to_streamer_notifications(self, channel):
+        channel_info_response = requests.get("https://api.twitch.tv/helix/search/channels?query={}".format(channel),
+                                             headers=self.api_hdrs)
+        broadcaster_id = channel_info_response.json()['data'][0]['id']
+        body = {
+            "type": "channel.follow",
+            "version": "1",
+            "condition": {
+                "broadcaster_user_id": broadcaster_id
+            },
+            "transport": {
+                "method": "webhook",
+                "callback": "li529-111.members.linode.com/follow_notification",
+                "secret": "come55sail88awayy"
+            }
+        }
+        requests.post("https://api.twitch.tv/helix/eventsub/subscriptions", body)
+        # gets webhook call back verification pending waiting to confirm callback addr
+            # {
+            #     "data": [{
+            #         "id": "f1c2a387-161a-49f9-a165-0f21d7a4e1c4",
+            #         "status": "webhook_callback_verification_pending",
+            #         "type": "channel.follow",
+            #         "version": "1",
+            #         "cost": 1,
+            #         "condition": {
+            #             "broadcaster_user_id": "12826"
+            #         },
+            #         "transport": {
+            #             "method": "webhook",
+            #             "callback": "https://example.com/webhooks/callback"
+            #         },
+            #         "created_at": "2019-11-16T10:11:12.123Z"
+            #     }],
+            #     "total": 1,
+            #     "total_cost": 1,
+            #     "max_total_cost": 10000
+            # }
+        # twitch calls callback
+            #POST https://example.com/webhooks/callback
+            # ----
+            # Twitch-Eventsub-Message-Id:             e76c6bd4-55c9-4987-8304-da1588d8988b
+            # Twitch-Eventsub-Message-Retry:          0
+            # Twitch-Eventsub-Message-Type:           webhook_callback_verification
+            # Twitch-Eventsub-Message-Signature:      sha256=f56bf6ce06a1adf46fa27831d7d15d
+            # Twitch-Eventsub-Message-Timestamp:      2019-11-16T10:11:12.123Z
+            # Twitch-Eventsub-Subscription-Type:      channel.follow
+            # Twitch-Eventsub-Subscription-Version:   1
+            # ----
+            # {
+            #     "challenge": "pogchamp-kappa-360noscope-vohiyo",
+            #     "subscription": {
+            #         "id": "f1c2a387-161a-49f9-a165-0f21d7a4e1c4",
+            #         "status": "webhook_callback_verification_pending",
+            #         "type": "channel.follow",
+            #         "version": "1",
+            #         "cost": 1,
+            #         "condition": {
+            #                 "broadcaster_user_id": "12826"
+            #         },
+            #         "transport": {
+            #             "method": "webhook",
+            #             "callback": "https://example.com/webhooks/callback"
+            #         },
+            #         "created_at": "2019-11-16T10:11:12.123Z"
+            #     }
+            # }
+        # Verify the Twitch-Eventsub-Message-Signature header in the callback verification request to make sure the payload came from Twitch. See Verify a signature for more details.
+        # Respond to the callback verification request by returning the value of challenge.
+        # Your response must be a raw string. If your server is using a web framework, be careful that your web
+        # framework isn’t modifying the response in an incompatible way. For example, some web frameworks default to converting responses into JSON objects.
+
+        # When receive on call back verify it was twitch and respond with 200 status code
+
     def run(self):
+        self.subscribe_to_streamer_notifications('woodenducksdontfly')
         self.write_to_system("PASS {}\r\n".format(self.password))
         self.write_to_system("USER {} 0 * {}\r\n".format(self.nickname, self.nickname))
         self.write_to_system("NICK {}\r\n".format(self.nickname))
@@ -153,7 +228,7 @@ class TwitchBot(Thread, Bot):
             self.write_to_system("JOIN #{}\r\n".format(channel))
             print("Joined")
             #TODO on channel update
-            self.go_live(self, channel)
+            self.go_live(self, '', '', channel)
         print("Begin Main Loop")
         #self.write_to_chat(self.greeting)
         # Enter main
@@ -169,6 +244,8 @@ class TwitchBot(Thread, Bot):
                         msg_text = result.group(8).strip()
                         message = textutil.sanitize_text(msg_text)
                         if self.anti_bot_check_pass(from_user, message.lower()):
+                            if from_user not in lurk_data.lurk_data_handler.get_lurkers(from_channel):
+                                gamble_data.add_recent_chatter(from_channel, from_user)
                             self.message_mailbox.put(("twitch", from_user, message, from_channel))
                         elif self.penalty_mode == 'timeout':
                             self.write_to_chat("/{} {} {}".format(self.penalty_mode,

@@ -3,11 +3,13 @@ import bots.twitchbot
 import bots.discordbot
 import bots.soundalertserver
 from queue import Queue
-from flask import Flask, make_response, send_file, send_from_directory
-from file_handler import anti, static, user_data, stream
+from flask import Flask, make_response, send_file, send_from_directory, request
+from data_handlers import anti, gamble_data, lurk_data, static, user_data, stream
 import messagehandler
 import logging
 import os
+import json
+from pprint import pprint
 
 app = Flask(__name__)
 twitch_bot = None
@@ -39,6 +41,21 @@ def send_js(path):
 @app.route('/get_audio/<path:path>')
 def get_audio(path):
     return send_from_directory('static/StreamSounds', path)
+
+
+@app.route('/follow_notification', methods=['POST'])
+def endpoint():
+    pprint(request.data)
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+
+@app.route('/channels')
+def channels():
+    resp = ""
+    with open('data/join_channels.json', 'r') as join_channels:
+        for channel in json.load(join_channels):
+            resp = channel
+    return resp
 
 
 if __name__ == "__main__":
@@ -82,6 +99,8 @@ if __name__ == "__main__":
         exit()
 
     anti.AntiDataHandler()
+    gamble_data.GambleDataHandler()
+    lurk_data.LurkDataHandler()
     user_data.UserDataHandler()
     static.StaticFileHandler()
     stream.StreamDataHandler()

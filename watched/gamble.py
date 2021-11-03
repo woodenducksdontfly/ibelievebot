@@ -1,6 +1,6 @@
 import math
 import messagehandler
-from file_handler import user_data
+from data_handlers import user_data, gamble_data
 import random
 import re
 import requests
@@ -41,7 +41,7 @@ def get_valid_players(channel, viewers, vips, mods):
     return the_best
 
 
-def _give_everyone_currency(bot, channel):
+def _give_everyone_currency(bot, sent_by, msg_txt, channel):
     messagehandler.register_timer("twitch", 'currency_handout_{}'.format(channel), _give_everyone_currency, channel, 600.0)
     if bot.is_stream_live(channel):
         # TODO update channel
@@ -68,7 +68,7 @@ def _give_everyone_currency(bot, channel):
             print("tmi api disappeared")
 
 
-def _give_everyone_syrup(bot, channel):
+def _give_everyone_syrup(bot, sent_by, msg_txt, channel):
     messagehandler.register_timer("twitch", 'syrup_handout_{}'.format(channel), _give_everyone_syrup, channel, 600.0)
     if bot.is_stream_live(channel):
         # TODO update channel
@@ -78,11 +78,13 @@ def _give_everyone_syrup(bot, channel):
             viewers = chatters.get('viewers', {})
             vips = chatters.get('vips', {})
             mods = chatters.get('moderators', {})
-            currency_payout = random.randint(2, 20)
+            currency_payout = random.randint(2, 50)
             calling = True
 
             valid_players = get_valid_players(channel, viewers, vips, mods)
-            bonus_syrup_user = valid_players[(random.randint(0, len(valid_players)-1))].lower()
+            bonus_syrup_user = None
+            if len(valid_players) > 0:
+                bonus_syrup_user = valid_players[(random.randint(0, len(valid_players)-1))].lower()
             for player in valid_players:
                 if player.lower() in get_valid_players(channel, viewers, vips, mods):
                     if calling:
@@ -92,10 +94,14 @@ def _give_everyone_syrup(bot, channel):
                                           channel)
                         calling = False
                     user_data.user_data_handler.add_syrup_balance_wait_for_flush(player, currency_payout)
-            user_data.user_data_handler.add_syrup_balance_wait_for_flush(bonus_syrup_user, 5)
-            bot.write_to_chat('The tree lords are particularly fond of {} and have rewarded them with 5 bonus {}'.format(bonus_syrup_user,
-                                                                                                                         combo_currency),
-                              channel)
+            if bonus_syrup_user:
+                user_data.user_data_handler.add_syrup_balance_wait_for_flush(bonus_syrup_user, 5)
+                if bonus_syrup_user not in gamble_data.gamble_data_handler.get_recent_chatters(channel):
+                    print("Secret syrup payout to {}".format(bonus_syrup_user))
+                    bonus_syrup_user = "someone lurking"
+                bot.write_to_chat(f'The tree lords are particularly fond of {bonus_syrup_user}' +
+                                  f' and have rewarded them with 5 bonus {combo_currency}',
+                                  channel)
             user_data.user_data_handler.flush_data()
         else:
             print("tmi api disappeared")
@@ -108,13 +114,12 @@ def syrup_appeal(bot, sent_by, msg_text, channel=None):
         appeal_for_syrup.append(sent_by.lower())
         bot.write_to_chat("The tree lords will think about your request {}".format(sent_by), channel)
     if not bot.timers.get("syrup_appeal_{}".format(channel)):
-        messagehandler.register_timer("twitch", 'syrup_appeal_{}'.format(channel), _answer_syrup_appeal, channel,
-                                      300.0)
+        messagehandler.register_timer("twitch", 'syrup_appeal_{}'.format(channel), _answer_syrup_appeal, channel, 300.0)
 
 
 def _answer_syrup_appeal(bot, channel):
     global appeal_for_syrup
-    winner = bool(random.randint(0, 100) >= 50)
+    winner = bool(random.randint(10, 100) >= 50)
     if winner:
         currency_payout = random.randint(2, 10)
         for player in appeal_for_syrup:
@@ -126,6 +131,16 @@ def _answer_syrup_appeal(bot, channel):
         bot.write_to_chat("The tree lords have denied everyone's request for more {}".format(combo_currency),
                           channel)
     appeal_for_syrup = []
+
+
+@messagehandler.register("twitch", "!roll")
+@messagehandler.register("twitch", "!chance")
+def roll(bot, sent_by, msg_text, channel=None):
+    if gamble_data.gamble_data_handler.is_valid_roll(sent_by, channel):
+        reward = random.randint(10, 250)
+        user_data.user_data_handler.add_syrup_balance(sent_by, reward)
+        bonus_msg = "" if reward < 100 else " Good Roll!!!"
+        bot.write_to_chat("{} has been awarded {} {}{}".format(sent_by, reward, combo_currency, bonus_msg), channel)
 
 
 # TODO clean this garbage up
@@ -219,12 +234,16 @@ def gamble(bot, sent_by, msg_text, channel=None):
 
 
 @messagehandler.register("twitch", "!stock")
+@messagehandler.register("twitch", "!stack")
 @messagehandler.register("twitch", "!balance")
 @messagehandler.register("twitch", "!points")
 @messagehandler.register("twitch", "!waffles")
 @messagehandler.register("twitch", "!waffle")
 @messagehandler.register("twitch", "!syrup")
 @messagehandler.register("twitch", "!seerup")
+@messagehandler.register("twitch", "!surup")
+@messagehandler.register("twitch", "!szurup")
+@messagehandler.register("twitch", "!!cerialup")
 def balance(bot, sent_by, msg_text, channel=None):
     try:
         my_balance = user_data.user_data_handler.get_balance(sent_by)

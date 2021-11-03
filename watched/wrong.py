@@ -2,7 +2,7 @@ import inspect
 
 import messagehandler
 import cooldown
-from file_handler import stream
+from data_handlers import stream
 
 
 @messagehandler.register("twitch", "!wrongchat")

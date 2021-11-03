@@ -1,6 +1,6 @@
 import messagehandler
 from datetime import datetime
-from file_handler import static
+from data_handlers import static
 
 # Quotes from yogi tea tags
 quotes = static.file_handler.get_file_data('yogi.json')

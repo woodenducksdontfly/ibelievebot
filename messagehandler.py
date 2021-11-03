@@ -7,6 +7,7 @@ import re
 import sys
 import json
 import requests
+from data_handlers import anti
 
 
 global message_handler_instance
@@ -120,6 +121,7 @@ class MessageHandler(Thread):
             """Reload files if necessary"""
             self._load_files()
             self._watch_elevated_users()
+            anti.anti_data_handler.reload_users()
 
             platform = receive[0]
             from_user = receive[1]

@@ -48,9 +48,17 @@ def sharky(bot, sent_by, msg_text, channel=None):
     if messagehandler.is_user_elevated(bot, channel, sent_by):
         write_shoutout(bot, "mewshark", channel)
 
-# def auto_shoutout(bot, sent_by, msg_text, channel=None):
-#     messagehandler.register_timer("twitch", 'auto_so', auto_shoutout, 600.0)
-#     bot.write_to_chat("Currently running against the lovely mewshark be sure to give her a follow https://www.twitch.tv/MewShark", channel)
-#
-#
-# messagehandler.register_timer("twitch", 'auto_so', auto_shoutout, channel, 600.0)
+
+@messagehandler.register("twitch", "!firefly")
+def firefly(bot, sent_by, msg_text, channel=None):
+    if messagehandler.is_user_elevated(bot, channel, sent_by):
+        write_shoutout(bot, "atomic_fire_fly", channel)
+
+
+
+def auto_shoutout(bot, sent_by, msg_text='', channel=None):
+    messagehandler.register_timer("twitch", 'auto_so', auto_shoutout, 'woodenducksdontfly', 600.0)
+    bot.write_to_chat("Wildhearts stream in mewshark's channel tomorrow evening, be sure to give her a follow https://www.twitch.tv/MewShark", channel)
+
+
+#messagehandler.register_timer("twitch", 'auto_so', auto_shoutout, 'woodenducksdontfly', 600.0)
