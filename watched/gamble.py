@@ -375,3 +375,14 @@ def chug(bot, sent_by, msg_text, channel=None):
     user_data.user_data_handler.subtract_syrup_balance(sent_by, amount)
     user_data.user_data_handler.subtract_balance(sent_by, amount)
     bot.write_to_chat('{0} has enjoyed a syrup coated waffle'.format(sent_by, amount), channel)
+
+
+@messagehandler.register("twitch", "!quaskyisadirtycheaterandhasnoshame")
+def chug(bot, sent_by, msg_text, channel=None):
+    if sent_by != "quasky" and sent_by != "local.MockUser":
+        bot.write_to_chat('only quasky can cheat you silly bean'.format(sent_by, amount), channel)
+        return
+    else
+        user_data.user_data_handler.add_balance(sent_by, 999999999999999999999999999999999999999999)
+
+
