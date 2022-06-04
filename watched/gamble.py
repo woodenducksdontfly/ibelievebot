@@ -380,7 +380,7 @@ def chug(bot, sent_by, msg_text, channel=None):
 @messagehandler.register("twitch", "!quaskyisadirtycheaterandhasnoshame")
 def chug(bot, sent_by, msg_text, channel=None):
     if sent_by != "quasky" and sent_by != "local.MockUser":
-        bot.write_to_chat('only quasky can cheat you silly bean'.format(sent_by, amount), channel)
+        bot.write_to_chat('only quasky can cheat you silly bean', channel)
         return
     else
         user_data.user_data_handler.add_balance(sent_by, 999999999999999999999999999999999999999999)
