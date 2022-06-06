@@ -8,3 +8,4 @@ venv_win/*
 x360_venv/*
 /ibelievebot.log
 static/StreamSounds
+/stream_logs/*

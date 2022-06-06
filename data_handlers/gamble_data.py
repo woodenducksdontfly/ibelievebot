@@ -31,15 +31,19 @@ class GambleDataHandler:
             return True
 
     def add_recent_chatter(self, username, channel):
-        self.recent_chatters[channel] = self.recent_chatters.get(channel, set())
+        if not self.recent_chatters.get(channel):
+            self.recent_chatters[channel] = set()
         self.recent_chatters[channel].add(username)
 
     def remove_recent_chatter(self, username, channel):
-        self.recent_chatters[channel] = self.recent_chatters.get(channel, set())
+        if not self.recent_chatters.get(channel):
+            self.recent_chatters[channel] = set()
         self.recent_chatters[channel].remove(username)
 
     def get_recent_chatters(self, channel):
-        return self.recent_chatters.get(channel, set())
+        if not self.recent_chatters.get(channel):
+            self.recent_chatters[channel] = set()
+        return self.recent_chatters[channel]
 
     def flush_data(self):
         mod_date = os.stat(self.roll_filename)[8]

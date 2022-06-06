@@ -49,6 +49,13 @@ def sharky(bot, sent_by, msg_text, channel=None):
         write_shoutout(bot, "mewshark", channel)
 
 
+@messagehandler.register("twitch", "!mandrake")
+@messagehandler.register("twitch", "!mandooks")
+def sharky(bot, sent_by, msg_text, channel=None):
+    if messagehandler.is_user_elevated(bot, channel, sent_by):
+        write_shoutout(bot, "mandrake", channel)
+
+
 @messagehandler.register("twitch", "!firefly")
 def firefly(bot, sent_by, msg_text, channel=None):
     if messagehandler.is_user_elevated(bot, channel, sent_by):

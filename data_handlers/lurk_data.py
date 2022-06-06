@@ -12,12 +12,16 @@ class LurkDataHandler:
         lurk_data_handler = self
 
     def add_lurker(self, username, channel):
-        self.lurkers[channel] = self.lurkers.get(channel, set())
+        if not self.lurkers.get(channel):
+            self.lurkers[channel] = set()
         self.lurkers[channel].add(username)
 
     def remove_lurker(self, username, channel):
-        self.lurkers[channel] = self.lurkers.get(channel, set())
+        if not self.lurkers.get(channel):
+            self.lurkers[channel] = set()
         self.lurkers[channel].remove(username)
 
     def get_lurkers(self, channel):
-        return self.lurkers.get(channel, set())
+        if not self.lurkers.get(channel):
+            self.lurkers[channel] = set()
+        return self.lurkers[channel]

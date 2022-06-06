@@ -6,8 +6,8 @@ class IrcChannel(irc.IrcChannel):
         self.irc = None
 
     def send(self, message):
-        print("{}\r\n".format(message))
-        #print(message.encode('utf-8')+"\r\n")
+        print(f"{message}\r\n")
 
     def receive(self, bytes_to_receive=1024):
-        return ":local.MockUser!local.MockUser@MockIF.tmi.twitch.tv PRIVMSG #MockChannel :" + input()
+        message: str = ":local.MockUser!local.MockUser@MockIF.tmi.twitch.tv PRIVMSG #MockChannel :" + str(input())
+        return message

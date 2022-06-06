@@ -1,6 +1,6 @@
 import uuid
 from threading import Timer
-from expiringdict import ExpiringDict
+from utils.expiringdict import ExpiringDict
 
 
 cooldown_monitor = {}
@@ -8,6 +8,7 @@ cooldown_monitor = {}
 
 def out_of_cooldown_callback(function):
     cooldown_monitor[function]['in_cooldown'] = False
+    cooldown_monitor[function]['cooldown_message_sent'] = False
 
 
 def is_cooldown_message_sent(function):
@@ -22,20 +23,17 @@ def set_cooldown_message_sent(function):
 
 
 def cooldown(function, number_of_calls, within_timelimit, cooldown_for_time):
-    command_in_cooldown = False
     cooldown_monitor[function] = cooldown_monitor.get(function, {'in_cooldown': False,
                                                                  'cooldown_message_sent': False,
-                                                                 'recent_calls': ExpiringDict(max_len=100,
-                                                                                              max_age_seconds=within_timelimit)})
+                                                                 'recent_calls': ExpiringDict(max_age_seconds=within_timelimit)})
 
     if cooldown_monitor[function]['in_cooldown'] and len(cooldown_monitor[function]['recent_calls']) >= number_of_calls:
-        command_in_cooldown = True
+        cooldown_monitor[function]['in_cooldown'] = True
     else:
         cooldown_monitor[function]['recent_calls'][uuid.uuid1()] = True
         if len(cooldown_monitor[function]['recent_calls']) >= number_of_calls:
-            command_in_cooldown = True
+            cooldown_monitor[function]['in_cooldown'] = True
             cooldown_monitor[function]['cooldown_message_sent'] = False
             timer = Timer(cooldown_for_time, out_of_cooldown_callback, [function])
             timer.start()
-        cooldown_monitor[function]['in_cooldown'] = command_in_cooldown
-    return command_in_cooldown
+    return cooldown_monitor[function]['in_cooldown']

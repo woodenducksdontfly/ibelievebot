@@ -10,7 +10,7 @@ import json
 from bots.bot import Bot
 import importlib
 import copy
-from data_handlers import anti, gamble_data, lurk_data
+from data_handlers import anti, user_data, gamble_data, lurk_data
 
 class TwitchBot(Thread, Bot):
 
@@ -32,7 +32,7 @@ class TwitchBot(Thread, Bot):
         self.timers = {}
         self.streamer = streamer
         self.channels = []
-        self.penalty_mode = 'timeout'
+        self.penalty_mode = 'disabled'
         self.penalty_timeout = 5
         self.go_live_notification = go_live_notification
         try:
@@ -69,7 +69,12 @@ class TwitchBot(Thread, Bot):
         self.irc_channel.send(message)
 
     def write_to_chat(self, message, channel=None):
-        self.write_to_system("PRIVMSG #{} :{}\r\n".format(channel, message))
+        self.write_to_system(f"PRIVMSG #{channel} :{message}\r\n")
+
+    def call(self, cmd, channel=None):
+        print(cmd)
+        exec(cmd)
+        print("done")
 
     def register_timer(self, name, function, channel, timeout):
         if channel:
@@ -139,6 +144,10 @@ class TwitchBot(Thread, Bot):
             anti.anti_data_handler.register(from_user)
         if anti.anti_data_handler.is_registered(from_user):
             ret_val = True
+
+        # if register failed
+        if not ret_val:
+            print(f"{from_user} not registered [{message}]")
         return ret_val
 
     def subscribe_to_streamer_notifications(self, channel):
@@ -243,9 +252,9 @@ class TwitchBot(Thread, Bot):
                         from_channel = result.group(6).strip().lower()
                         msg_text = result.group(8).strip()
                         message = textutil.sanitize_text(msg_text)
-                        if self.anti_bot_check_pass(from_user, message.lower()):
+                        if self.penalty_mode == 'disabled' or self.anti_bot_check_pass(from_user, message.lower()):
                             if from_user not in lurk_data.lurk_data_handler.get_lurkers(from_channel):
-                                gamble_data.add_recent_chatter(from_channel, from_user)
+                                gamble_data.gamble_data_handler.add_recent_chatter(from_user, from_channel)
                             self.message_mailbox.put(("twitch", from_user, message, from_channel))
                         elif self.penalty_mode == 'timeout':
                             self.write_to_chat("/{} {} {}".format(self.penalty_mode,

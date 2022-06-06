@@ -28,7 +28,10 @@ class SoundAlertServer(Thread, Bot):
             await self.websocket.send(message)
 
     async def send_audio(self, filename):
-        await self.websocket.send(filename)
+        if self.websocket:
+            await self.websocket.send(filename)
+        else:
+            print("Nothing connected")
 
     def play_audio(self, bot, from_user, filename, channel):
         loop = asyncio.new_event_loop()

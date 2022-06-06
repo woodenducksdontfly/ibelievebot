@@ -1,4 +1,6 @@
 import argparse
+from datetime import datetime
+
 import bots.twitchbot
 import bots.discordbot
 import bots.soundalertserver
@@ -6,6 +8,7 @@ from queue import Queue
 from flask import Flask, make_response, send_file, send_from_directory, request
 from data_handlers import anti, gamble_data, lurk_data, static, user_data, stream
 import messagehandler
+import customlogger
 import logging
 import os
 import json
@@ -28,8 +31,8 @@ def root_page(self):
 @app.route('/audio')
 def audio_page():
     resp = make_response(send_file('static/audio.html'))
-    # resp.headers['Access-Control-Allow-Origin'] = '*'
-    # resp.headers['Feature-Policy'] = "autoplay '*'"
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Feature-Policy'] = "autoplay '*'"
     return resp
 
 
@@ -59,7 +62,10 @@ def channels():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='ibelievebot.log', level=logging.INFO)
+    logger = customlogger.get_logger(__name__)
+    logger.log(logging.INFO, f" {'='*40} Bot  Start {'='*40} ")
+    logger.log(logging.INFO, f" {'='*32} {datetime.now()} {'='*32} ")
+    # logger.log(logging.INFO, f" {'='*92} ")
     parser = argparse.ArgumentParser()
     parser.add_argument('--mock', action="store_true")
     parser.add_argument('--no-auto', action="store_false", dest='auto_start')
@@ -81,21 +87,21 @@ if __name__ == "__main__":
     try:
         with open("data/secrets.py") as f:
             exec(f.read())
-    except:
+    except FileNotFoundError:
         try:
             os.mkdir("data")
         except FileExistsError as e:
             pass
-        with open("data/secrets.py", 'w') as f:
-            f.write('streamer = "woodenducksdontfly"\n')
-            f.write('channel = streamer\n')
-            f.write('twitch_client_id = ""\n')
-            f.write('twitch_oauth = "oauth:"\n')
-            f.write('twitch_api_oauth = ""\n')
-            f.write('discord_token = ""\n')
-            f.write('slack_token = ""\n')
-            f.write('youtube_token = ""\n')
-        print("Update data/secrets.py")
+        # with open("data/secrets.py", 'w') as f:
+        #     f.write('streamer = "woodenducksdontfly"\n')
+        #     f.write('channel = streamer\n')
+        #     f.write('twitch_client_id = ""\n')
+        #     f.write('twitch_oauth = "oauth:"\n')
+        #     f.write('twitch_api_oauth = ""\n')
+        #     f.write('discord_token = ""\n')
+        #     f.write('slack_token = ""\n')
+        #     f.write('youtube_token = ""\n')
+        # print("Update data/secrets.py")
         exit()
 
     anti.AntiDataHandler()

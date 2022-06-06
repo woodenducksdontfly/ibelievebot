@@ -12,9 +12,10 @@ def look(bot, sent_by, msg_text, channel=None):
                                         number_of_calls=5,
                                         within_timelimit=60,
                                         cooldown_for_time=500)
-        if in_cooldown and not cooldown.is_cooldown_message_sent(function_name):
-            bot.write_to_chat("Look is in cooldown, please don't spam chat", channel)
-            cooldown.set_cooldown_message_sent(function_name)
+        if in_cooldown:
+            if not cooldown.is_cooldown_message_sent(function_name):
+                bot.write_to_chat("Look is in cooldown, please don't spam chat", channel)
+                cooldown.set_cooldown_message_sent(function_name)
             return
         try:
             extra_command = msg_text.split(' ', 1)[1]

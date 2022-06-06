@@ -21,7 +21,7 @@ def lurk(bot, sent_by, msg_text, channel=None):
             bot.write_to_chat(f"{sent_by} has joined {flattened_lurkers} in lurk city.", channel)
         else:
             bot.write_to_chat("{} is off to lurk city alone".format(sent_by), channel)
-        lurk_data.lurk_data_handler.add_lurker(channel, sent_by)
+        lurk_data.lurk_data_handler.add_lurker(sent_by, channel)
         gamble_data.gamble_data_handler.remove_recent_chatter(sent_by, channel)
     else:
         bot.write_to_chat("{} is already in lurk city".format(sent_by), channel)
@@ -32,7 +32,7 @@ def lurk(bot, sent_by, msg_text, channel=None):
 @messagehandler.register("twitch", "!notlurk")
 def unlurk(bot, sent_by, msg_text, channel=None):
     if sent_by in lurk_data.lurk_data_handler.get_lurkers(channel):
-        lurk_data.lurk_data_handler.remove_lurker(channel, sent_by)
+        lurk_data.lurk_data_handler.remove_lurker(sent_by, channel)
         gamble_data.gamble_data_handler.add_recent_chatter(sent_by, channel)
         bot.write_to_chat("{} has returned from lurk city".format(sent_by), channel)
     else:

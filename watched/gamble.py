@@ -27,6 +27,7 @@ invalid_users = ["local.mockuser",
                  "bingcortana",
                  "SoundAlerts",
                  "sad_grl",
+                 "dankingaround",
                  "woodenducksdontfly"]
 
 global appeal_for_syrup
@@ -57,7 +58,7 @@ def _give_everyone_currency(bot, sent_by, msg_txt, channel):
             for player in get_valid_players(channel, viewers, vips, mods):
                 if player.lower() in get_valid_players(channel, viewers, vips, mods):
                     if calling:
-                        bot.write_to_chat('🧇 {} delivery, all chatters get {} {}'.format(currency.upper()[:-1],
+                        bot.write_to_chat('{} delivery, all chatters get {} {}'.format(currency.upper()[:-1],
                                                                                           currency_payout,
                                                                                           currency),
                                           channel)
@@ -117,7 +118,7 @@ def syrup_appeal(bot, sent_by, msg_text, channel=None):
         messagehandler.register_timer("twitch", 'syrup_appeal_{}'.format(channel), _answer_syrup_appeal, channel, 300.0)
 
 
-def _answer_syrup_appeal(bot, channel):
+def _answer_syrup_appeal(bot, sent_by, msg_text, channel=None):
     global appeal_for_syrup
     winner = bool(random.randint(10, 100) >= 50)
     if winner:
@@ -147,22 +148,19 @@ def roll(bot, sent_by, msg_text, channel=None):
 @messagehandler.register("twitch", "!bet")
 @messagehandler.register("twitch", "!gamble")
 def gamble(bot, sent_by, msg_text, channel=None):
-    if sent_by == "quasky" or sent_by == "omnikenx":
-        club(bot, sent_by, msg_text, channel)
-        bot.write_to_chat("{}, you have a gambling addiction".format(sent_by), channel)
-        return
     function_name = inspect.stack()[1][3]
-    # in_cooldown = cooldown.cooldown(function=function_name,
-    #                                 number_of_calls=10,
-    #                                 within_timelimit=15,
-    #                                 cooldown_for_time=150)
-    # if in_cooldown:
-    #     if not cooldown.is_cooldown_message_sent(function_name):
-    #         bot.write_to_chat("Gambling is in cooldown, please don't spam chat", channel)
-    #         cooldown.set_cooldown_message_sent(function_name)
-    #     return
+    in_cooldown = cooldown.cooldown(function=function_name,
+                                    number_of_calls=10,
+                                    within_timelimit=15,
+                                    cooldown_for_time=150)
+    if in_cooldown:
+        if not cooldown.is_cooldown_message_sent(function_name):
+            bot.write_to_chat("Gambling is in cooldown, please don't spam chat", channel)
+            cooldown.set_cooldown_message_sent(function_name)
+        return
+
     if not bot.is_stream_live(channel):
-       return
+        return
     try:
         club_status = user_data.user_data_handler.get_club_status(sent_by)
         if club_status:
@@ -208,25 +206,31 @@ def gamble(bot, sent_by, msg_text, channel=None):
 
         if my_balance <= 0 and amount_to_gamble > 100:
             bot.write_to_chat("Hold up, you're in debt," +
-                              " I'm limiting you to 100 {} per bet until you're out".format(currency),
+                              f" I'm limiting you to 100 {currency} per bet until you're out",
                               channel)
             return
 
-        lost = bool(random.randint(0, 100) < 40)
+        if user_data.user_data_handler.get_club_status(sent_by):
+            modifier = (user_data.user_data_handler.get_golden_waffles() * 5)
+        else:
+            modifier = 0
+
+        lost = bool(random.randint(0, 100) < (40 + modifier))
+
         if lost:
             user_data.user_data_handler.subtract_balance(sent_by, amount_to_gamble)
             bot.write_to_chat('{0} lost {1} {3} and now has {2} {3}'.format(sent_by,
                                                                             amount_to_gamble,
                                                                             user_data.user_data_handler.get_balance(sent_by),
                                                                             currency),
-                              channel)
+                                                                            channel)
         else:
             user_data.user_data_handler.add_balance(sent_by, amount_to_gamble)
             bot.write_to_chat('{0} won {1} {3} and now has {2} {3}'.format(sent_by,
                                                                            amount_to_gamble,
                                                                            user_data.user_data_handler.get_balance(sent_by),
                                                                            currency),
-                              channel)
+                                                                           channel)
     except SyntaxError:
         pass
     except IndexError:
@@ -240,15 +244,23 @@ def gamble(bot, sent_by, msg_text, channel=None):
 @messagehandler.register("twitch", "!waffles")
 @messagehandler.register("twitch", "!waffle")
 @messagehandler.register("twitch", "!syrup")
+@messagehandler.register("twitch", "!syurp")
 @messagehandler.register("twitch", "!seerup")
 @messagehandler.register("twitch", "!surup")
 @messagehandler.register("twitch", "!szurup")
+@messagehandler.register("twitch", "!jugs")
 @messagehandler.register("twitch", "!!cerialup")
 def balance(bot, sent_by, msg_text, channel=None):
     try:
         my_balance = user_data.user_data_handler.get_balance(sent_by)
         my_syrup_balance = user_data.user_data_handler.get_syrup_balance(sent_by)
-        bot.write_to_chat('{} has {} {} and {} {}'.format(sent_by,
+        my_golden_waffle_balance = user_data.user_data_handler.get_golden_waffles(sent_by)
+        golden_balance_text = ""
+        if my_golden_waffle_balance:
+            if my_golden_waffle_balance > 0:
+                golden_balance_text = f"{my_golden_waffle_balance} Golden Waffles "
+        bot.write_to_chat('{} has {}{} {} and {} {}'.format(sent_by,
+                                                          golden_balance_text,
                                                           my_balance,
                                                           currency,
                                                           my_syrup_balance,
@@ -259,9 +271,6 @@ def balance(bot, sent_by, msg_text, channel=None):
 
 @messagehandler.register("twitch", "!give")
 def give(bot, sent_by, msg_text, channel=None):
-    #if sent_by != messagehandler.streamer and sent_by != "local.MockUser":
-    if sent_by != "woodenducksdontfly" and sent_by != "local.MockUser":
-         return
     try:
         who_to_give = msg_text.split(' ')[1].lower()
     except Exception as e:
@@ -272,11 +281,16 @@ def give(bot, sent_by, msg_text, channel=None):
     except Exception as e:
         print("NAN")
         return
-    user_data.user_data_handler.add_balance(who_to_give, amount_to_give)
+    if abs(amount_to_give) != amount_to_give:
+        return
+    if user_data.user_date_handler.get_club_status(sent_by) == "God":
+        return
+    if sent_by != "woodenducksdontfly" and sent_by != "local.MockUser":
+        user_data.user_data_handler.add_balance(who_to_give, amount_to_give)
+    elif user_data.user_data_handler.get_balance(sent_by) >= abs(amount_to_give):
+        user_data.user_data_handler.subtract_balance(sent_by, amount_to_give)
+        user_data.user_data_handler.add_balance(who_to_give, amount_to_give)
     bot.write_to_chat('Gave {} {} {}'.format(who_to_give, amount_to_give, currency), channel)
-    # TODO let users give waffles to each other
-    # return
-    #user_balance = user_data.user_data_handler.get_balance(sent_by)
 
 
 @messagehandler.register("twitch", "!top5")
@@ -307,16 +321,12 @@ def bottom_five(bot, sent_by, msg_text, channel=None):
         output += "{}. {}: {} ".format(rank+1, user, user_data.user_data_handler.get_balance(user))
     bot.write_to_chat(output, channel)
 
-#
-# Once someone hits 1b waffles, they get a golden waffle and then it prestiges.
-# person resets to 0, then it takes the waffle win chance -(x*.1)
-# If you hold a golden waffle, it makes it 10% harder each time you earn one
-# Waffle 10 never able to gamble again
-#
+
 @messagehandler.register("twitch", "!wealthy")
 def club(bot, sent_by, msg_text, channel=None):
-     bot.write_to_chat("Quasky is hella wealthy", channel)
-#     club_status = userdatahandler.user_data_handler.get_club_status(sent_by)
+     bot.write_to_chat("Coming soon :)", channel)
+     #TODO list users by level
+#     club_status = user_data.user_data_handler.get_club_status(sent_by)
 #     output = ""
 #     if club_status:
 #         if club_status is int:
@@ -332,39 +342,66 @@ def club(bot, sent_by, msg_text, channel=None):
 #      bot.write_to_chat(output, channel)
 #
 #
-# gold_waffle_price = 1000000000
-#
-#
-# @messagehandler.register("twitch", "!buyin")
-# def buy_in(bot, sent_by, msg_text, channel=None):
-#     user_balance = userdatahandler.user_data_handler.get_balance(sent_by)
-#     club_status = userdatahandler.user_data_handler.get_club_status(sent_by)
-#     output = ""
-#     if club_status != 10:
-#         purchasable_waffles = user_balance % gold_waffle_price
-#         user_balance - (purchasable_waffles * gold_waffle_price)
-#         if club_status >= 10:
-#             user_balance = 0
-#
-#     if club_status != 10 and purchasable_waffles >= 10:
-#         output = "{} is now a {} God".format(sent_by, currency)
-#         userdatahandler.user_data_handler.update_club_status(sent_by)
-#     elif purchasable_waffles > 0:
-#         output = "{} has purchased {} Golden {} total! ".format(sent_by, purchasable_waffles, currency)
-#         if not club_status:
-#             output += "Welcome in :)"
-#         if club_status == "revoked":
-#             output += "Welcome back :)"
-#         userdatahandler.user_data_handler.update_club_status(sent_by)
-#     else:
-#         output = "Ha please, you need more waffles"
-#
-#     bot.write_to_chat(output, channel)
+
+
+@messagehandler.register("twitch", "!club")
+def club_rank(bot, sent_by, msg_text, channel=None):
+    #TODO Cooldown
+    club_status = user_data.user_data_handler.get_club_status(sent_by)
+    if club_status:
+        bot.write_to_chat(club_status, channel)
+    else:
+        bot.write_to_chat("Maybe one day")
+
+
+@messagehandler.register("twitch", "!buy")
+def buy(bot, sent_by, msg_text, channel=None):
+    club_status = user_data.user_data_handler.get_club_status(sent_by)
+    output = ""
+    if club_status != "God":
+        previous_club_status = user_data.user_data_handler.get_club_status(sent_by)
+        user_data.user_data_handler.add_gold_waffles(sent_by)
+        club_status = user_data.user_data_handler.get_club_status(sent_by)
+        if club_status == "God" or previous_club_status:
+            output = f"{sent_by} is now a {currency} {club_status}"
+        else:
+            output = f"New Member! {sent_by} is now a {club_status}"
+    else:
+        output = "Ha please, you don't need more waffles"
+
+    bot.write_to_chat(output, channel)
+
+
+@messagehandler.register("twitch", "!sell")
+def sell(bot, sent_by, msg_text, channel=None):
+    club_status = user_data.user_data_handler.get_club_status(sent_by)
+    output = ""
+    if club_status != "God" and user_data.user_data_handler.get_golden_waffles(sent_by) > 0:
+        previous_club_status = user_data.user_data_handler.get_club_status()
+        user_data.user_data_handler.remove_gold_waffle(sent_by)
+        club_status = user_data.user_data_handler.get_club_status()
+        if club_status:
+            output = f"{sent_by} is now a {currency} {club_status}"
+        else:
+            output = "You're too poor now :p"
+    else:
+        output = "You know I can't allow that"
+    bot.write_to_chat(output, channel)
 
 
 @messagehandler.register("twitch", "!eat")
 @messagehandler.register("discord", "!eat")
 def eat(bot, sent_by, msg_text, channel=None):
+    function_name = inspect.stack()[1][3]
+    in_cooldown = cooldown.cooldown(function=function_name,
+                                    number_of_calls=10,
+                                    within_timelimit=15,
+                                    cooldown_for_time=150)
+    if in_cooldown:
+        if not cooldown.is_cooldown_message_sent(function_name):
+            bot.write_to_chat("Gambling is in cooldown, please don't spam chat", channel)
+            cooldown.set_cooldown_message_sent(function_name)
+        return
     # TODO tie twitch username to discord name
     amount_to_eat = 1
     try:
@@ -394,3 +431,17 @@ def chug(bot, sent_by, msg_text, channel=None):
     user_data.user_data_handler.subtract_syrup_balance(sent_by, amount)
     user_data.user_data_handler.subtract_balance(sent_by, amount)
     bot.write_to_chat('{0} has enjoyed a syrup coated waffle'.format(sent_by, amount), channel)
+
+@messagehandler.register("twitch", '!mk')
+def mk(bot, sent_by, msg_text, channel=None):
+    bot.write_to_chat("mini 1542-7514-2187", channel)
+
+@messagehandler.register("twitch", "!quaskyisadirtycheaterandhasnoshame")
+def quaskyisadirtycheaterandhasnoshame(bot, sent_by, msg_text, channel=None):
+    if sent_by != "quasky" and sent_by != "local.MockUser":
+        bot.write_to_chat('only quasky can cheat you silly bean', channel)
+        return
+    else:
+        user_data.user_data_handler.add_balance(sent_by, 999999999999999999999999999999999999999999)
+
+

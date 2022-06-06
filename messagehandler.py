@@ -31,7 +31,8 @@ def register_timer(platform, name, function, channel, timeout):
 
 def is_user_elevated(bot, channel, user):
     elevated_status = False
-    mods = bot.get_moderators(channel[1:])
+    chan_name = channel[1:] if "#" in channel else channel
+    mods = bot.get_moderators(chan_name)
     if user in _elevated_users + mods:
         elevated_status = True
     return elevated_status

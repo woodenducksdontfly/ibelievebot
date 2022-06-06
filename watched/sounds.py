@@ -1,3 +1,6 @@
+import inspect
+
+import cooldown
 import messagehandler
 from data_handlers import user_data
 
@@ -42,8 +45,13 @@ def sheesh(bot, sent_by, msg_text, channel=None):
 
 @messagehandler.register("twitch", "!birthday")
 def birthday(bot, sent_by, msg_text, channel=None):
+    function_name = inspect.stack()[1][3]
     if _use_points(sent_by):
         bot.message_mailbox.put(("audio", sent_by, 'thor-ragnarok-its-my-birthday-scene-hd-audiotrimmer.mp3', channel))
+    #if sent_by.lower() == "mandrakeroots":
+    #    bot.write_to_chat("Actually though, so happy birthday", channel)
+    #else:
+    #    bot.write_to_chat("If you see Mandrake wish them a happy birthday https://thronegifts.com/u/mandrakeroots https://streamlabs.com/mandrakeroots/tip @MandrakeRoots @MandrakeRoots @MandrakeRoots @MandrakeRoots @MandrakeRoots", channel)
 
 
 @messagehandler.register("twitch", "!wah")
@@ -73,7 +81,7 @@ def nut(bot, sent_by, msg_text, channel=None):
 @messagehandler.register("twitch", "!owo")
 def owo(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
-        bot.message_mailbox.put(("audio", sent_by, 'owo.wav', channel))
+        bot.message_mailbox.put(("audio", sent_by, 'owo_mew.mp3', channel))
 
 
 @messagehandler.register("twitch", "!uwu")
@@ -122,4 +130,23 @@ def box(bot, sent_by, msg_text, channel=None):
 def box(bot, sent_by, msg_text, channel=None):
     if _use_points(sent_by):
         bot.message_mailbox.put(("audio", sent_by, 'nixon.mp3', channel))
+
+
+
+@messagehandler.register("twitch", "!dani")
+def dani(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'dani.mp3', channel))
+
+
+@messagehandler.register("twitch", "!ara")
+def dani(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'mewshark/ara_ara.mp3', channel))
+
+
+@messagehandler.register("twitch", "!yoshi")
+def dani(bot, sent_by, msg_text, channel=None):
+    if _use_points(sent_by):
+        bot.message_mailbox.put(("audio", sent_by, 'mewshark/Yoshi.mp3', channel))
 
