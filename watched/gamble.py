@@ -108,6 +108,23 @@ def _give_everyone_syrup(bot, sent_by, msg_txt, channel):
             print("tmi api disappeared")
 
 
+@messagehandler.register("twitch", '!chaosmeter')
+def chaosmeter(bot, sent_by, msg_text, channel=None):
+    response = requests.get('http://tmi.twitch.tv/group/user/{}/chatters'.format(channel))
+    if response.status_code == 200:
+        chatters = response.json()['chatters']
+        viewers = chatters.get('viewers', {})
+        vips = chatters.get('vips', {})
+        mods = chatters.get('moderators', {})
+        number_of_viewers = len(viewers + vips + mods)
+        number_of_dice = min(5, number_of_viewers // 4 + 1)  # 1 die per 4 viewers
+        chaos_level = 1
+        for i in range(number_of_dice):
+            chaos_level = max(chaos_level, random.randint(1, 11))
+        fire = "🔥 🔥 🔥 " if chaos_level == 11 else ""
+        bot.write_to_chat(f"{fire}Chaos is at {chaos_level} today!{fire}", channel)
+
+
 @messagehandler.register("twitch", "!appeal")
 def syrup_appeal(bot, sent_by, msg_text, channel=None):
     global appeal_for_syrup
