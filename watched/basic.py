@@ -58,6 +58,18 @@ def carrot(bot, sent_by, msg_text, channel=None):
     bot.write_to_chat("^", channel)
 
 
+@messagehandler.register("twitch", "@ibelievebot")
+def carrot(bot, sent_by, msg_text, channel=None):
+    function_name = inspect.stack()[1][3]
+    in_cooldown = cooldown.cooldown(function=function_name,
+                                    number_of_calls=1,
+                                    within_timelimit=60,
+                                    cooldown_for_time=240)
+    if in_cooldown:
+        return
+    bot.write_to_chat("Don't @ me jerk", channel)
+
+
 @messagehandler.register("twitch", "same")
 def same(bot, sent_by, msg_text, channel=None):
     function_name = inspect.stack()[1][3]
