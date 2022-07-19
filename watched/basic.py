@@ -59,7 +59,7 @@ def carrot(bot, sent_by, msg_text, channel=None):
 
 
 @messagehandler.register("twitch", "@ibelievebot")
-def carrot(bot, sent_by, msg_text, channel=None):
+def ibelievebot(bot, sent_by, msg_text, channel=None):
     function_name = inspect.stack()[1][3]
     in_cooldown = cooldown.cooldown(function=function_name,
                                     number_of_calls=1,
